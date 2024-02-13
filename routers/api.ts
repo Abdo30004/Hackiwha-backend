@@ -15,7 +15,7 @@ router.get("/", (req, res) => {
     message: "Hello in API V1",
   });
 });
-router.get("/user",Authenticator.verify, (req, res) => {
+router.get("/user", Authenticator.verify, (req, res) => {
   res.json(req.user);
 });
 
@@ -58,6 +58,40 @@ router.post("/user/register", async (req, res) => {
 
   res.json({
     message: "User Created",
+    token: `Bearer ${token}`,
+  });
+});
+
+router.post("/user/login", async (req, res) => {
+  let validStatus = Validator.validateLogin(req.body);
+
+  if (!validStatus.valid) {
+    res.status(400).json({
+      message: validStatus.message,
+    });
+    return;
+  }
+
+  let loginInfo = req.body as { email: string; password: string };
+
+  let userData = await userModel.findOne({ email: loginInfo.email });
+  let isMatch = userData
+    ? await Hasher.comparePassword(loginInfo.password, userData.password)
+    : false;
+
+  if (!userData || !isMatch) {
+    res.status(401).json({
+      message: "Invalid Email or Password",
+    });
+    return;
+  }
+
+  let token = jwt.sign({ _id: userData._id }, `${process.env.JWT_SECRET}`, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+
+  res.json({
+    message: "Login Success",
     token: `Bearer ${token}`,
   });
 });

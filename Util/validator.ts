@@ -8,33 +8,9 @@ class Validator {
       email: "email",
       password: "password",
     };
-    let exampleKeys = Object.keys(example);
-    let bodyKeys = Object.keys(body);
-
-    let checkEqual = exampleKeys.every((key) => bodyKeys.includes(key));
-
-    if (!checkEqual) {
-      let messingFields = exampleKeys.filter((key) => !bodyKeys.includes(key));
-      let extraFields = bodyKeys.filter((key) => !exampleKeys.includes(key));
-
-      return {
-        valid: false,
-        message:
-          messingFields.length > 0
-            ? `Missing fields (${messingFields.join(",")})`
-            : `Extra fields (${extraFields.join(",")})`,
-      };
-    }
-
-    for (let key in example) {
-      if (typeof body[key] !== typeof example[key as keyof typeof example]) {
-        return {
-          valid: false,
-          message: `Invalid type for ${key}, expected ${typeof example[
-            key as keyof typeof example
-          ]} got ${typeof body[key]}`,
-        };
-      }
+    let check = this.checkFields(body, example);
+    if (!check.valid) {
+      return check;
     }
 
     if (!this.validateEmail(body.email)) {
@@ -62,6 +38,34 @@ class Validator {
     };
   }
 
+  static validateLogin(body: any) {
+    let example = {
+      email: "email",
+      password: "password",
+    };
+    let check = this.checkFields(body, example);
+    if (!check.valid) {
+      return check;
+    }
+    if (!this.validateEmail(body.email)) {
+      return {
+        valid: false,
+        message: "Invalid Email",
+      };
+    }
+    if (!this.validatePassword(body.password)) {
+      return {
+        valid: false,
+        message: "Invalid Password",
+      };
+    }
+
+    return {
+      valid: true,
+      message: "Valid Login",
+    };
+  }
+
   static validateEmail(email: string): boolean {
     let regex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;
     return regex.test(email);
@@ -80,6 +84,33 @@ class Validator {
   static validateToken(token: string): boolean {
     let regex = /^Bearer [A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$/;
     return regex.test(token);
+  }
+
+  static checkFields(body: any, example: any) {
+    let exampleKeys = Object.keys(example);
+    let bodyKeys = Object.keys(body);
+    let checkEqual = exampleKeys.every((key) => bodyKeys.includes(key));
+    let checkType = exampleKeys.every(
+      (key) => typeof body[key] === typeof example[key as keyof typeof example]
+    );
+    let message = "";
+    if (!checkEqual) {
+      let messingFields = exampleKeys.filter((key) => !bodyKeys.includes(key));
+      let extraFields = bodyKeys.filter((key) => !exampleKeys.includes(key));
+      message = `Missing fields (${messingFields.join(",")})\n`;
+      message += `Extra fields (${extraFields.join(",")})\n`;
+    }
+    if (!checkType) {
+      let wrongType = exampleKeys.filter(
+        (key) =>
+          typeof body[key] !== typeof example[key as keyof typeof example]
+      );
+      message += `Invalid type for ${wrongType.join(",")}\n`;
+    }
+    return {
+      valid: checkEqual && checkType,
+      message,
+    };
   }
 }
 
