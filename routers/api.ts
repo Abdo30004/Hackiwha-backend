@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { v4 } from "uuid";
 
 import { Validator } from "../Util/validator";
+import { Authenticator } from "../middlewares/authenticator";
 import { Hasher } from "../Util/hasher";
 import { userModel } from "../database/models/User";
 import { User } from "../types/user";
@@ -14,10 +15,8 @@ router.get("/", (req, res) => {
     message: "Hello in API V1",
   });
 });
-router.get("/user", (req, res) => {
-  res.json({
-    message: "User",
-  });
+router.get("/user",Authenticator.verify, (req, res) => {
+  res.json(req.user);
 });
 
 router.post("/user/register", async (req, res) => {

@@ -1,6 +1,5 @@
-import { RequestUser } from "./user";
-
-
+import { RequestUser } from "../user";
+export { };
 declare global {
   namespace Express {
     export interface Request {

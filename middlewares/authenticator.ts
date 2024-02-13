@@ -16,15 +16,16 @@ class Authenticator {
     }
 
     let token = header.split(" ")[1];
-    let result = null;
+    let d:any = null;
     try {
-      result = jwt.verify(token, process.env.JWT_SECRET) as { _id: string };
+      d = jwt.verify(token, `${process.env.JWT_SECRET}`); 
     } catch (error) {
       res.status(401).json({
         message: "Unauthorized",
       });
       return;
     }
+    let result = {_id: d._id}
 
     let user = await userModel.findById(result._id, {
       password: 0,

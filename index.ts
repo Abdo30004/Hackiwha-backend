@@ -6,7 +6,6 @@ import { Logger } from "./middlewares/logger";
 import { Handler } from "./middlewares/handler";
 import { renderFile } from "ejs";
 import { initDB } from "./database/main";
-
 config({
   path: ".env",
 });
