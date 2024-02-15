@@ -1,7 +1,8 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { Validator } from "../Util/validator";
 import { userModel } from "../database/models/User";
+import { Status } from "../constants/status";
 
 class Authenticator {
   static async verify(req: Request, res: Response, next: NextFunction) {
@@ -9,32 +10,31 @@ class Authenticator {
     let header = `${req.headers.authorization}`;
     let isValid = Validator.validateToken(header);
     if (!isValid) {
-      res.status(401).json({
-        message: "Unauthorized",
-      });
+      res.status(Status.InvalidToken.code).json(Status.InvalidToken);
       return;
     }
 
     let token = header.split(" ")[1];
-    let d:any = null;
+    let payload: JwtPayload | null = null;
     try {
-      d = jwt.verify(token, `${process.env.JWT_SECRET}`); 
-    } catch (error) {
-      res.status(401).json({
-        message: "Unauthorized",
-      });
+      let verify = jwt.verify(token, `${process.env.JWT_SECRET}`);
+
+      if (typeof verify === "string") {
+        throw new Error("Invalid Token");
+      }
+
+      payload = verify as JwtPayload;
+    } catch (e) {
+      res.status(Status.InvalidToken.code).json(Status.InvalidToken);
       return;
     }
-    let result = {_id: d._id}
 
-    let user = await userModel.findById(result._id, {
-      password: 0,
-    });
+    let result = { _id: payload._id };
+    let tokenCreated = new Date((payload.iat || 0) * 1000);
+    let user = await userModel.findById(result._id);
 
-    if (!user) {
-      res.status(401).json({
-        message: "Unauthorized",
-      });
+    if (!user || user.lastValidLogin > tokenCreated) {
+      res.status(Status.Unauthorized.code).json(Status.Unauthorized);
       return;
     }
 
@@ -42,6 +42,7 @@ class Authenticator {
       _id: user._id,
       email: user.email,
       username: user.username,
+      lastValidLogin: user.lastValidLogin,
     };
     req.user = reqUser;
 

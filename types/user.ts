@@ -3,10 +3,10 @@ interface User {
   username: string;
   email: string;
   password: string;
+  lastValidLogin: Date;
 }
 
 type RequestUser = Omit<User, "password">;
 type BodyUser = Omit<User, "_id">;
-
 
 export { User, RequestUser, BodyUser };

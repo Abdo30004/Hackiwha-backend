@@ -7,24 +7,46 @@ import { Authenticator } from "../middlewares/authenticator";
 import { Hasher } from "../Util/hasher";
 import { userModel } from "../database/models/User";
 import { User } from "../types/user";
+import { Status } from "../constants/status";
+import { rateLimit } from "express-rate-limit";
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({
-    message: "Hello in API V1",
-  });
+const limiter = rateLimit({
+  handler: (_req, res) => {
+    res.status(Status.TooManyRequests.code).json(Status.TooManyRequests);
+  },
+  windowMs: 15 * 60 * 1000,
+  max: 1,
+  standardHeaders: true,
 });
-router.get("/user", Authenticator.verify, (req, res) => {
+
+router.get("/", limiter, (req, res) => {
+  res.status(Status.Welcome.code).json(Status.Welcome);
+});
+
+router.get("/user/me", Authenticator.verify, (req, res) => {
   res.json(req.user);
+});
+
+router.get("/user/logoutAll", Authenticator.verify, async (req, res) => {
+  let user = req.user;
+  if (!user) return;
+  let userData = await userModel.findById(user._id);
+  if (!userData) return;
+  userData.lastValidLogin = new Date();
+  await userData.save();
+
+  res.status(Status.LogoutSuccess.code).json(Status.LogoutSuccess);
 });
 
 router.post("/user/register", async (req, res) => {
   let validStatus = Validator.validateUser(req.body);
 
   if (!validStatus.valid) {
-    res.status(400).json({
-      message: validStatus.message,
+    res.status(Status.BadRequest.code).json({
+      ...Status.BadRequest,
+      error: validStatus.message,
     });
     return;
   }
@@ -36,9 +58,7 @@ router.post("/user/register", async (req, res) => {
   });
 
   if (userExist) {
-    res.status(409).json({
-      message: "User Already Exist",
-    });
+    res.status(Status.UserAlreadyExist.code).json(Status.UserAlreadyExist);
     return;
   }
 
@@ -51,13 +71,13 @@ router.post("/user/register", async (req, res) => {
   let hash = await Hasher.hashPassword(user.password);
 
   user.password = hash;
-
+  user.lastValidLogin = new Date();
   let data = new userModel(user);
 
   await data.save();
 
-  res.json({
-    message: "User Created",
+  res.status(Status.UserCreated.code).json({
+    ...Status.UserCreated,
     token: `Bearer ${token}`,
   });
 });
@@ -66,9 +86,11 @@ router.post("/user/login", async (req, res) => {
   let validStatus = Validator.validateLogin(req.body);
 
   if (!validStatus.valid) {
-    res.status(400).json({
-      message: validStatus.message,
+    res.status(Status.BadRequest.code).json({
+      ...Status.BadRequest,
+      error: validStatus.message,
     });
+
     return;
   }
 
@@ -80,9 +102,7 @@ router.post("/user/login", async (req, res) => {
     : false;
 
   if (!userData || !isMatch) {
-    res.status(401).json({
-      message: "Invalid Email or Password",
-    });
+    res.status(Status.InvalidLogin.code).json(Status.InvalidLogin);
     return;
   }
 
@@ -90,8 +110,8 @@ router.post("/user/login", async (req, res) => {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-  res.json({
-    message: "Login Success",
+  res.status(Status.LoginSuccess.code).json({
+    ...Status.LoginSuccess,
     token: `Bearer ${token}`,
   });
 });

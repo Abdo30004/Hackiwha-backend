@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-
+import { Status } from "../constants/status";
 class Handler {
   public static notFound(_req: Request, res: Response, _next: NextFunction) {
-    res.status(404).json({
-      message: "Not Found",
-    });
+    res.status(Status.NotFound.code).json(Status.NotFound);
   }
 
   public static error(
@@ -13,10 +11,9 @@ class Handler {
     res: Response,
     _next: NextFunction
   ) {
-    res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
-    });
+    res
+      .status(Status.InternalServerError.code)
+      .json(Status.InternalServerError);
   }
 }
 
