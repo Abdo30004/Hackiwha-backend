@@ -6,6 +6,8 @@ import { Logger } from "./middlewares/logger";
 import { Handler } from "./middlewares/handler";
 import { renderFile } from "ejs";
 import { initDB } from "./database/main";
+import process from "process";
+import cors from "cors";
 config({
   path: ".env",
 });
@@ -18,24 +20,26 @@ app.set("views", "views");
 app.set("view engine", "ejs");
 app.engine("html", renderFile);
 
-app.use(express.urlencoded({ extended: true }));
+app.use(cors()); // Enable All CORS Requests
 
-app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-app.use(Logger.info);
+app.use(express.json()); // for parsing application/json
 
-app.use("/static", express.static("static"));
+app.use(Logger.info); // Log all requests
 
-app.use(mainRouterConfig.path, mainRouterConfig.router);
+app.use("/static", express.static("static")); // Serve static files
 
-app.use(apiRouterConfig.path, apiRouterConfig.router);
+app.use(mainRouterConfig.path, mainRouterConfig.router); // Main router
 
-app.use(Handler.notFound);
+app.use(apiRouterConfig.path, apiRouterConfig.router); // API router
 
-app.use(Logger.error);
+app.use(Handler.notFound); // 404 handler
 
-app.use(Handler.error);
+app.use(Logger.error); // Log all errors
+
+app.use(Handler.error); // Error handler
 
 app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
+  console.log(`Server is running on port ${process.env.PORT}`); // Start server
 });

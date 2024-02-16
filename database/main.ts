@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 async function initDB(uri: string) {
-  let connection = mongoose.connection;
+  const connection = mongoose.connection;
 
   connection.on("connected", () => console.log("Connected to DB"));
   connection.on("error", (err) =>
@@ -13,11 +13,9 @@ async function initDB(uri: string) {
   await mongoose.connect(uri, {
     appName: "Hackiwha",
     dbName: "nameless-db",
-    connectTimeoutMS: 2000,// for testing purposes 
+    connectTimeoutMS: 2000, // for testing purposes
   });
 
-
-  
   return true;
 }
 

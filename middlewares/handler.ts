@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from "express";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { NextFunction, Request, Response } from "express";
 import { Status } from "../constants/status";
 class Handler {
   public static notFound(_req: Request, res: Response, _next: NextFunction) {

@@ -3,12 +3,12 @@ class Validator {
     valid: boolean;
     message: string;
   } {
-    let example = {
+    const example = {
       username: "username",
       email: "email",
       password: "password",
     };
-    let check = this.checkFields(body, example);
+    const check = this.checkFields(body, example);
     if (!check.valid) {
       return check;
     }
@@ -39,11 +39,11 @@ class Validator {
   }
 
   static validateLogin(body: any) {
-    let example = {
+    const example = {
       email: "email",
       password: "password",
     };
-    let check = this.checkFields(body, example);
+    const check = this.checkFields(body, example);
     if (!check.valid) {
       return check;
     }
@@ -67,41 +67,43 @@ class Validator {
   }
 
   static validateEmail(email: string): boolean {
-    let regex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;
+    const regex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;
     return regex.test(email);
   }
   static validateUsername(username: string): boolean {
-    let regex = /^[A-Za-z0-9-_]{3,16}$/;
+    const regex = /^[A-Za-z0-9-_]{3,16}$/;
     return regex.test(username);
   }
 
   static validatePassword(password: string): boolean {
-    let regex =
+    const regex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
     return regex.test(password);
   }
 
   static validateToken(token: string): boolean {
-    let regex = /^Bearer [A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$/;
+    const regex = /^Bearer [A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$/;
     return regex.test(token);
   }
 
   static checkFields(body: any, example: any) {
-    let exampleKeys = Object.keys(example);
-    let bodyKeys = Object.keys(body);
-    let checkEqual = exampleKeys.every((key) => bodyKeys.includes(key));
-    let checkType = exampleKeys.every(
+    const exampleKeys = Object.keys(example);
+    const bodyKeys = Object.keys(body);
+    const checkEqual = exampleKeys.every((key) => bodyKeys.includes(key));
+    const checkType = exampleKeys.every(
       (key) => typeof body[key] === typeof example[key as keyof typeof example]
     );
     let message = "";
     if (!checkEqual) {
-      let messingFields = exampleKeys.filter((key) => !bodyKeys.includes(key));
-      let extraFields = bodyKeys.filter((key) => !exampleKeys.includes(key));
+      const messingFields = exampleKeys.filter(
+        (key) => !bodyKeys.includes(key)
+      );
+      const extraFields = bodyKeys.filter((key) => !exampleKeys.includes(key));
       message = `Missing fields (${messingFields.join(",")})\n`;
       message += `Extra fields (${extraFields.join(",")})\n`;
     }
     if (!checkType) {
-      let wrongType = exampleKeys.filter(
+      const wrongType = exampleKeys.filter(
         (key) =>
           typeof body[key] !== typeof example[key as keyof typeof example]
       );

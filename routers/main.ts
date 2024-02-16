@@ -8,7 +8,7 @@ router.get("/", (req, res) => {
   });
 });
 
-let mainRouterConfig = {
+const mainRouterConfig = {
   router,
   path: "/",
 };
