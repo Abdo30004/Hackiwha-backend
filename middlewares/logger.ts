@@ -1,5 +1,6 @@
-import { NextFunction, Request, Response } from "express";
 import chalk from "chalk";
+import { NextFunction, Request, Response } from "express";
+
 class Logger {
   public static info(req: Request, _res: Response, next: NextFunction) {
     let methodColor = null;

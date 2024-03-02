@@ -16,15 +16,38 @@ const Status = {
     message: "Logout Success",
     code: 200,
   },
+  PatientAdded: {
+    message: "Patient Added",
+    code: 200,
+  },
+
+  PatientRemoved: {
+    message: "Patient Removed",
+    code: 200,
+  },
+
+  MedicationAdded: {
+    message: "Medication Added",
+    code: 200,
+  },
+
+  MedicationRemoved: {
+    message: "Medication Removed",
+    code: 200,
+  },
 
   BadRequest: {
     message: "Bad Request",
     code: 400,
   },
 
+ 
+  
+
+
   Unauthorized: {
     message: "Unauthorized",
-    code: 401, 
+    code: 401,
   },
 
   InvalidToken: {
@@ -52,6 +75,10 @@ const Status = {
     code: 429,
   },
 
+  UserNotFound: {
+    message: "User Not Found",
+    code: 404,
+  },
 
   InternalServerError: {
     message: "Internal Server Error",

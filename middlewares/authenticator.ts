@@ -1,12 +1,13 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 import { Validator } from "../Util/validator";
-import { userModel } from "../database/models/User";
+import { UserModel } from "../database/models/User";
 
 import { Status } from "../constants/status";
 
 import process from "process";
+
 class Authenticator {
   static async verify(req: Request, res: Response, next: NextFunction) {
     req.user = null;
@@ -33,23 +34,16 @@ class Authenticator {
     }
 
     const result = { _id: payload._id };
-    const tokenCreated = new Date((payload.iat || 0) * 1000);
-    const user = await userModel.findById(result._id);
-
-    if (!user || user.lastValidLogin > tokenCreated) {
+    //const tokenCreated = new Date((payload.iat || 0) * 1000);
+    const user = await UserModel.findById(result._id);//.select("-info.password");
+    if (!user) {
       res.status(Status.Unauthorized.code).json(Status.Unauthorized);
       return;
     }
 
-    const reqUser = {
-      _id: user._id,
-      email: user.email,
-      username: user.username,
-      lastValidLogin: user.lastValidLogin,
-    };
-    req.user = reqUser;
 
-    //req.user = result;
+    req.user = user;
+
     next();
     return;
   }
